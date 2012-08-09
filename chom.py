@@ -7,7 +7,13 @@ from sys import argv
 text = []
 for line in stdin([]):
     text.append(line.rstrip())
+
+# Ignore junk like HTTP headers and curl feedback.
+while text and not text[0].startswith('{'):
+    text = text[1:]
+
 obj = loads('\n'.join(text))
+
 for key in argv[1:]:
     try:
         obj = obj[key]
