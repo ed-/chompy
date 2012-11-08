@@ -12,7 +12,23 @@ for line in stdin([]):
 while text and not text[0].startswith('{'):
     text = text[1:]
 
-obj = loads('\n'.join(text))
+text = '\n'.join(text)
+
+# Replace some dumb things that json.loads doesn't like
+replacements = [
+    ("'", '"'),
+    ('u"', '"'),
+    ("True", '"True"'),
+    ("False", '"False"'),
+    ("None", '"None"'),
+    ("<", '"<'),
+    (">", '>"'),
+    ]
+
+for a, b in replacements:
+    text = text.replace(a, b)
+
+obj = loads(text)
 
 for key in argv[1:]:
     try:
