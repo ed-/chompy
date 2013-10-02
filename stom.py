@@ -27,16 +27,23 @@ def replace_annoying_chars(text):
         t = t.replace(a, b)
     return t
 
+def flatten(obj, prefix=''):
+    if type(obj) == dict:
+        for k, v in obj.items():
+            p = ('%s.%s' % (prefix, k)) if prefix else k
+            for line in flatten(v, prefix=p):
+                yield line
+    elif type(obj) == list:
+        for k, v in enumerate(obj):
+            p = ('%s.%s' % (prefix, k)) if prefix else k
+            for line in flatten(v, prefix=p):
+                yield line
+    else:
+        yield '%s = %s' % (prefix, obj)
+
 
 if __name__ == '__main__':
-    from sys import argv
     text = get_text_from_stdin()
     text = replace_annoying_chars(text)
-    obj = loads(text)
-    for key in argv[1:]:
-        try:
-            obj = obj[key]
-        except TypeError:
-            obj = obj[int(key)]
-
-    print dumps(obj, sort_keys=True, indent=2)
+    for line in flatten(loads(text)):
+        print line
