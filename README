@@ -1,2 +1,3 @@
 Chompy is a dumb little script that adds drilldown to python -mjson.tool.
 Stompy doesn't have drilldown, but instead it namespaces all the keys to make for easier parsing.
+Whompy parses prettytable output and gives the same kind of drilldown as chompy.
