@@ -1,49 +1,30 @@
 #!/usr/bin/env python
+"""
+STOM.PY
+Pipe in a JSON document, and the structure will be stomped
+so that every value is prefixed with a dotted path key.
+"""
 
-from fileinput import input as stdin
-from json import dumps, loads
+import json
+import sys
 
-def get_text_from_stdin():
-    text = []
-    for line in stdin([]):
-        text.append(line.rstrip())
-    while text and not text[0].startswith('{'):
-        text = text[1:]
-    return '\n'.join(text)
 
-def replace_annoying_chars(text):
-    t = text
-    replacements = [
-        ("'", '"'),
-        ('u"', '"'),
-        ("True", '"True"'),
-        ("False", '"False"'),
-        ("None", '"None"'),
-        ("<", '"<'),
-        (">", '>"'),
-        ]
-
-    for a, b in replacements:
-        t = t.replace(a, b)
-    return t
-
-def flatten(obj, prefix=''):
-    if type(obj) == dict:
-        for k, v in obj.items():
+def stomp(J, prefix=''):
+    if isinstance(J, dict):
+        for k in sorted(J):
             p = ('%s.%s' % (prefix, k)) if prefix else k
-            for line in flatten(v, prefix=p):
+            for line in stomp(J[k], prefix=p):
                 yield line
-    elif type(obj) == list:
-        for k, v in enumerate(obj):
-            p = ('%s.%s' % (prefix, k)) if prefix else k
-            for line in flatten(v, prefix=p):
+    elif isinstance(J, list):
+        for i, v in enumerate(J):
+            p = ('%s.%i' % (prefix, i)) if prefix else '%i' % i
+            for line in stomp(v, prefix=p):
                 yield line
     else:
-        yield '%s = %s' % (prefix, obj)
+        yield '%s = %s' % (prefix, J)
 
 
 if __name__ == '__main__':
-    text = get_text_from_stdin()
-    text = replace_annoying_chars(text)
-    for line in flatten(loads(text)):
-        print line
+    X = json.loads(sys.stdin.read())
+    for line in stomp(X):
+        print(line)

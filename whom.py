@@ -1,38 +1,30 @@
 #!/usr/bin/env python
+"""
+WHOM.PY
+Pipe in a prettytable document, and the table will be
+whomped into a JSON document, a list of dictionaries
+using the table headers as keys.
+"""
 
-from fileinput import input as stdin
-from json import dumps
+import json
+import sys
 
-def get_text_from_stdin():
-    text = []
-    for line in stdin([]):
-        l = line.strip()
-        if l.startswith('|') or l.startswith('+'):
-            text.append(l.rstrip())
-    return '\n'.join(text)
 
-def detablize(text):
-    keys = []
-    rows = []
-    for line in text.split('\n'):
-        if line.startswith('+'):
+def whomp(table):
+    keys, rows = [], []
+    for line in table.split('\n'):
+        if not line or line.startswith('+'):
             continue
         line = line.strip('|')
-        columns = [x.strip() for x in line.split('|')]
+        columns = [col.strip() for col in line.split('|')]
         if not keys:
             keys = columns
         else:
-            row = dict(zip(keys, columns))
-            rows.append(row)
+            rows.append(dict(zip(keys, columns)))
     return rows
 
+
 if __name__ == '__main__':
-    from sys import argv
-    text = get_text_from_stdin()
-    obj = detablize(text)
-    for key in argv[1:]:
-        try:
-            obj = obj[key]
-        except TypeError:
-            obj = obj[int(key)]
-    print dumps(obj, sort_keys=True, indent=2)
+    X = sys.stdin.read()
+    X = whomp(X)
+    print(json.dumps(X, indent=2, sort_keys=True))
